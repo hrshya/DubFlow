@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from service.gnani.api import transcribe_audio
+
 app = FastAPI()
 
 app.add_middleware(
@@ -85,6 +87,7 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
 
         # 3. Custom AI Dubbing Model Execution
         jobs[job_id]["status"] = "processing_ai"
+        transcribe_audio(audio_in, language="en-IN")  # Example: Transcribe audio to text
 
         # Replace with your real model call
         shutil.copy(audio_in, audio_out)
@@ -124,9 +127,10 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
 
     finally:
         # Clean up temporary raw streams
-        for temp_path in [video_file, audio_in, audio_out]:
+        for temp_path in [video_file, audio_out]:
             if temp_path.exists():
                 temp_path.unlink()
+        print("job done")
 
 
 @app.post("/api/dub")
