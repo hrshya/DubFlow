@@ -41,7 +41,13 @@ def transcribe_audio(audio_file_path: str, language: str) -> str:
             if f.ok:
                 print(f.text)            # full_transcript
 
-        job.save("../../outputs")
+        job.save("./outputs")
+
+        #create a file with the transcribed text
+        with open("./outputs/transcribed_text.txt", "w") as f:
+            f.write(job.files()[0].text)
+
+        return "./outputs/transcribed_text.txt"
     
     except Exception as e:
         print(f"Error during transcription: {e}")
