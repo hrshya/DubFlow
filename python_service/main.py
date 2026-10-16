@@ -9,7 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from service.gnani.api import transcribe_audio
+from service.gnani.main import transcribe_audio
+from service.sarvam.main import translate_text
 
 app = FastAPI()
 
@@ -59,7 +60,7 @@ def download_audio_as_wav(youtube_url: str, output_path: Path):
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
-                "preferredcodec": "wav",
+                "preferredcodec": "mp3",
                 "preferredquality": "192",
             }
         ],
@@ -73,8 +74,8 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
     jobs[job_id]["status"] = "downloading"
 
     video_file = OUTPUT_DIR / f"{job_id}_video.mp4"
-    audio_in = OUTPUT_DIR / f"{job_id}_in.wav"
-    audio_out = OUTPUT_DIR / f"{job_id}_out.wav"
+    audio_in = OUTPUT_DIR / f"{job_id}_in.mp3"
+    audio_out = OUTPUT_DIR / f"{job_id}_out.mp3"
     final_file = OUTPUT_DIR / f"{job_id}_dubbed.mp4"
 
     try:
@@ -87,7 +88,9 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
 
         # 3. Custom AI Dubbing Model Execution
         jobs[job_id]["status"] = "processing_ai"
-        transcribe_audio(audio_in, language="en-IN")  # Example: Transcribe audio to text
+        text = transcribe_audio(audio_in, language="en-IN")  # Example: Transcribe audio to text
+        translated_text = translate_text(text, source_language_code="en-IN", target_language_code="hi-IN", output_dir=OUTPUT_DIR)  # Example: Translate text
+        print(f"Translated Text: {translated_text}")
 
         # Replace with your real model call
         shutil.copy(audio_in, audio_out)
