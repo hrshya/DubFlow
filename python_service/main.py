@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from service.gnani.main import transcribe_audio
 from service.sarvam.main import translate_text
+from service.gnani.main import synthesize_audio
 
 app = FastAPI()
 
@@ -89,11 +90,17 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
         # 3. Custom AI Dubbing Model Execution
         jobs[job_id]["status"] = "processing_ai"
         text = transcribe_audio(audio_in, language="en-IN")  # Example: Transcribe audio to text
-        translated_text = translate_text(text, source_language_code="en-IN", target_language_code="hi-IN", output_dir=OUTPUT_DIR)  # Example: Translate text
-        print(f"Translated Text: {translated_text}")
+        translated_text_path = translate_text(text, source_language_code="en-IN", target_language_code="hi-IN", output_dir=OUTPUT_DIR)  # Example: Translate text
+        # Read the translated text from the file
+        translated_text = ""
+        with open(translated_text_path, "r", encoding="utf-8") as f:
+            translated_text = f.read()
+
+        print(f"Translated text: {translated_text}")
+        synthesize_audio(translated_text, language="hi-IN", output_file_path=audio_out)
 
         # Replace with your real model call
-        shutil.copy(audio_in, audio_out)
+        # shutil.copy(audio_in, audio_out)
 
         # 4. Recompile Video + Dubbed Audio using FFmpeg
         jobs[job_id]["status"] = "recompiling"
@@ -130,9 +137,9 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
 
     finally:
         # Clean up temporary raw streams
-        for temp_path in [video_file, audio_out]:
-            if temp_path.exists():
-                temp_path.unlink()
+        # for temp_path in [video_file, audio_in, audio_out]:
+        #     if temp_path.exists():
+        #         temp_path.unlink()
         print("job done")
 
 
