@@ -1,4 +1,5 @@
 from gnani.stt import GnaniSTTBatchClient
+from gnani.tts import GnaniTTSStreamClient
 from utils.lib import require
 
 API_KEY = require("GNANI_API_KEY")
@@ -53,3 +54,34 @@ def transcribe_audio(audio_file_path: str, language: str) -> str:
         print(f"Error during transcription: {e}")
         raise
 
+
+
+def synthesize_audio(text: str, language: str, output_file_path: str) -> None:
+    """
+    Synthesizes speech from the given text using the Gnani TTS API.
+
+    Args:
+        text (str): The text to be converted to speech.
+        language (str): The language code for synthesis (e.g., 'en', 'hi').
+        output_file_path (str): The path where the synthesized audio will be saved.
+    """
+    if not text or not text.strip():
+        raise ValueError("Cannot synthesize audio: Provided text is empty or missing.")
+
+    try:
+        client = GnaniTTSStreamClient(api_key=API_KEY)
+
+        with open(output_file_path, "wb") as f:
+            for chunk in client.synthesize_stream(
+                text,
+                voice="Deepak",
+                model="timbre-v2.5",
+                language=language,
+            ):
+                f.write(chunk)
+
+        print(f"Audio synthesized successfully to: {output_file_path}")
+
+    except Exception as e:
+        print(f"Error during synthesis: {e}")
+        raise
