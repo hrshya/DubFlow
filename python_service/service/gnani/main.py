@@ -1,5 +1,5 @@
 from gnani.stt import GnaniSTTBatchClient
-from gnani.tts import GnaniTTSStreamClient
+import requests
 from utils.lib import require
 
 API_KEY = require("GNANI_API_KEY")
@@ -73,7 +73,7 @@ def synthesize_audio(text: str, language: str, output_file_path: str) -> None:
 
         with open(output_file_path, "wb") as f:
             for chunk in client.synthesize_stream(
-                text,
+                text=text,
                 voice="Deepak",
                 model="timbre-v2.5",
                 language=language,
