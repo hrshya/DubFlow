@@ -59,18 +59,21 @@ export const useCases = [
     title: "Personal use",
     description:
       "Enjoy your favourite creators, documentaries, and informative videos in your native language, even when a dub is not available.",
+    image: "/img/usecase-personal.png",
   },
   {
     icon: Megaphone,
     title: "Creators",
     description:
       "Adapt videos for viewers who speak a different language and grow beyond one audience.",
+    image: "/img/usecase-creator.png",
   },
   {
     icon: GraduationCap,
     title: "Educators",
     description:
       "Make lessons and explainers easier to follow for learners around the world.",
+    image: "/img/usecase-education.png",
   },
   {
     icon: Video,
