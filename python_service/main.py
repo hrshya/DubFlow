@@ -76,7 +76,7 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
 
     video_file = OUTPUT_DIR / f"{job_id}_video.mp4"
     audio_in = OUTPUT_DIR / f"{job_id}_in.mp3"
-    audio_out = OUTPUT_DIR / f"{job_id}_out.mp3"
+    audio_out = OUTPUT_DIR / f"{job_id}_out.wav"
     final_file = OUTPUT_DIR / f"{job_id}_dubbed.mp4"
 
     try:
@@ -97,7 +97,9 @@ def execute_dubbing_task(job_id: str, youtube_url: str):
             translated_text = f.read()
 
         print(f"Translated text: {translated_text}")
-        synthesize_audio(translated_text, language="hi-IN", output_file_path=audio_out)
+        synthesize_audio(
+            translated_text, language="hi-IN", output_file_path=audio_out
+        )
 
         # Replace with your real model call
         # shutil.copy(audio_in, audio_out)
@@ -157,3 +159,20 @@ async def get_status(job_id: str):
     if job_id not in jobs:
         raise HTTPException(status_code=404, detail="Job not found")
     return jobs[job_id]
+
+
+@app.get("/api/output")
+async def get_output():
+    try:
+        # read the translated text from the file
+        with open("./outputs/translated_transcribed_text.txt", "r", encoding="utf-8") as f:
+            translated_text = f.read()
+
+
+        output_path = OUTPUT_DIR / "confirmation.wav"
+        synthesize_audio(
+            translated_text, language="hi-IN", output_file_path=output_path
+        )
+        return {"output_path": "/outputs/confirmation.wav"}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Translation not found")
