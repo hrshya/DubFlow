@@ -1,9 +1,10 @@
+import { YouTubeDubModal } from "@/components/YoutubeModel";
 
 
 
 
 export default function DubbingPage() {
     return (
-        <div>Dubbing Page</div>
+        <div><YouTubeDubModal /></div>
     )
 }
