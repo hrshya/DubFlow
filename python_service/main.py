@@ -166,13 +166,8 @@ async def get_output():
     try:
         # read the translated text from the file
         with open("./outputs/translated_transcribed_text.txt", "r", encoding="utf-8") as f:
-            translated_text = f.read()
-
-
-        output_path = OUTPUT_DIR / "confirmation.wav"
-        synthesize_audio(
-            translated_text, language="hi-IN", output_file_path=output_path
+            translated_text    t_path
         )
-        return {"output_path": "/outputs/confirmation.wav"}
+        return {"output_path": "/outputs/confirmation.wav"} 
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Translation not found")
