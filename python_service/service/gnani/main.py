@@ -3,11 +3,18 @@ from gnani.tts import GnaniTTSStreamClient
 import subprocess
 import tempfile
 from pathlib import Path
+from uuid import UUID
 from utils.lib import require
+from utils.output_paths import get_job_output_dir
 
 API_KEY = require("GNANI_API_KEY")
 
-def transcribe_audio(audio_file_path: str, language: str) -> str:
+def transcribe_audio(
+    audio_file_path: str,
+    language: str,
+    user_id: str | UUID,
+    job_id: str | UUID,
+) -> str:
     try:
         """
         Transcribes the given audio file using the Gnani STT API.
@@ -15,6 +22,8 @@ def transcribe_audio(audio_file_path: str, language: str) -> str:
         Args:
             audio_file_path (str): The path to the audio file to be transcribed.
             language (str): The language code for transcription (e.g., 'en', 'hi').
+            user_id: User who owns the generated transcription files.
+            job_id: Job that owns the generated transcription files.
 
         Returns:
             str: The transcribed text.
@@ -45,13 +54,16 @@ def transcribe_audio(audio_file_path: str, language: str) -> str:
             if f.ok:
                 print(f.text)            # full_transcript
 
-        job.save("./outputs")
+        output_path = get_job_output_dir(user_id, job_id)
+        output_path.mkdir(parents=True, exist_ok=True)
+        job.save(str(output_path))
 
         #create a file with the transcribed text
-        with open("./outputs/transcribed_text.txt", "w") as f:
+        transcript_path = output_path / "transcribed_text.txt"
+        with open(transcript_path, "w", encoding="utf-8") as f:
             f.write(job.files()[0].text)
 
-        return "./outputs/transcribed_text.txt"
+        return str(transcript_path)
     
     except Exception as e:
         print(f"Error during transcription: {e}")
@@ -95,7 +107,9 @@ def chunk_text(text: str, max_chars: int = 800) -> list[str]:
 def synthesize_audio(
     text: str,
     language: str,
-    output_file_path: str | Path = "confirmation.wav",
+    user_id: str | UUID,
+    job_id: str | UUID,
+    filename: str = "dubbed_audio.wav",
 ) -> str:
     """
     Synthesizes speech from the given text using the Gnani TTS API.
@@ -103,7 +117,9 @@ def synthesize_audio(
     Args:
         text (str): The text to be converted to speech.
         language (str): The language code for synthesis (e.g., 'en', 'hi').
-        output_file_path: The path where the merged audio will be saved.
+        user_id: User who owns the generated audio.
+        job_id: Job that owns the generated audio.
+        filename: Output filename within that user's job directory.
     """
 
     try:
@@ -111,7 +127,10 @@ def synthesize_audio(
         if not chunks:
             raise ValueError("Cannot synthesize empty text")
 
-        output_path = Path(output_file_path)
+        job_dir = get_job_output_dir(user_id, job_id).resolve()
+        output_path = (job_dir / filename).resolve()
+        if output_path.parent != job_dir and job_dir not in output_path.parents:
+            raise ValueError("filename must stay inside the user's job directory")
         output_path.parent.mkdir(parents=True, exist_ok=True)
         client = GnaniTTSStreamClient(API_KEY)
 
