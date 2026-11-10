@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
+from uuid import UUID
 from sarvamai import SarvamAI
 from utils.lib import require
+from utils.output_paths import get_job_output_dir
 
 SARVAM_API_KEY = require("SARVAM_API_KEY")
 
@@ -46,7 +48,8 @@ def translate_text(
     input_text_path: str,
     source_language_code: str,
     target_language_code: str,
-    output_dir: str,
+    user_id: str | UUID,
+    job_id: str | UUID,
     model: str = "mayura:v1",
 ) -> str:
     """Translates a .txt file safely using Sarvam AI, chunking text under 800 characters per request."""
@@ -87,7 +90,7 @@ def translate_text(
                 raise chunk_error
 
         # 4. Ensure output directory exists and save file
-        out_dir_path = Path(output_dir)
+        out_dir_path = get_job_output_dir(user_id, job_id)
         out_dir_path.mkdir(parents=True, exist_ok=True)
 
         filename = Path(input_text_path).name

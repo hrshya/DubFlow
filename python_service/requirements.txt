@@ -1,4 +1,11 @@
 fastapi
+python-multipart
 uvicorn
 yt-dlp
 ffmpeg
+faster-whisper
+google-genai
+python-dotenv
+gnani-vachana
+sarvamai
+groq
